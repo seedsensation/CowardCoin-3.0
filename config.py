@@ -1,0 +1,1 @@
+TimeToCoin = 300
