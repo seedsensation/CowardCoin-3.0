@@ -1,5 +1,6 @@
 import os
 import pickle
+import pathlib
 
 attributes = ["id","coins","style","lasttrick"]
 
@@ -57,3 +58,19 @@ class SearchableList(list):
             result.append(item)
         return result
 
+def convertlegacyfile():
+    # legacyfile = {userid:[coins,stylepoints,...],userid2:[coins,stylepoints,...]}
+    # newformat = [collector(userid), collector(userid2), ...]
+
+    with open(pathlib.Path("files/text files/coins.txt"), "r") as f:
+        legacyfile = f.read()
+
+    newformat = [collector(userid), collector(userid2), ...]
+
+    for item in legacyfile:
+        user = collector(legacyfile[item]) # creates a new Collector item with the ID of the current user
+        user.coins = legacyfile[item][0]
+        user.style = legacyfile[item][1]
+
+    legacyfile.savestate()
+    
