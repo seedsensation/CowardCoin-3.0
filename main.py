@@ -378,7 +378,7 @@ class Select(discord.ui.Select):
 @tree.command(name="restart", description= "Give it a quick reboot - this will fix a few issues.",
               guild=discord.Object(id=guildID))
 async def test(interaction: discord.Interaction):
-    await interaction.response.send_message("Restarting...")
+    await interaction.response.send_message("Restarting...",ephemeral=True)
     exit()
 
 @tree.command(name="shop", description= "Buy icons to go next to your name!",
@@ -392,6 +392,7 @@ async def test(startinteraction: discord.Interaction):
     author = startinteraction.user
     async def callback(interaction: discord.Interaction):
         localauthor = userlist.find(interaction.user.id)
+        print(interaction.user.display_name,localauthor.coins)
         boughtitem = config.icons.find(select.values[0])
         authorrolelist  = []
         for role in interaction.user.roles:
