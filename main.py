@@ -39,28 +39,27 @@ class coin:
             ["gold", "<a:goldcoin:813889535699189871>", "gold", 99, [10,20]],
             ["SUPER RARE red", "<a:redcoin:844545670709772290>", "ultrarare", 100, [20,50]],
         ]
-
+           
+        # Sets default coin rarities
         # FORMAT:
         # type[0] = name
         # type[1] = emote
         # type[2] = filename
-        # type[3] = % chance of getting coin - MUST TOTAL TO 100
+        # type[3] = if rarity >= type[3]= this is chosen
         # type[4] = value calculator
 
-        rarity = random.randint(1,100)
-        if rarity <= 50:
-            type = coinrarities[1]
-        elif rarity <= 80:
-            type = coinrarities[2]
-        elif rarity <= 99:
-            type = coinrarities[3]
+        rarity = random.randint(1,100) # randomly generate style points
+        for item in coinrarities: # go through each type of coins
+            if rarity <= item[3]: # if it is this current coin rarity:
+                type = item # save it, break the loop
+                break
         else:
-            type = coinrarities[4]
-
-        self.name = type[0]
-        self.emote = type[1]
-        self.filename = type[2]
-        self.value = random.randint(type[4][0],type[4][1])
+            raise ValueError(f"Invalid Coin Rarity - {rarity}") # else return an error
+        
+        self.name = type[0] # save name from dict
+        self.emote = type[1] # save emote
+        self.filename = type[2] # save filename
+        self.value = random.randint(type[4][0],type[4][1]) # calculate cost
 
 
 
