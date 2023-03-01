@@ -394,7 +394,7 @@ async def test(startinteraction: discord.Interaction):
             authorrolelist.append(role.id)
 
         if boughtitem.id in authorrolelist:
-            await interaction.response.send("You already have this role...",ephemeral=True)
+            await interaction.response.send_message("You already have this role...",ephemeral=True)
         else:
             cost = boughtitem.cost
             ids = []
@@ -427,7 +427,7 @@ async def test(startinteraction: discord.Interaction):
                 output = "You can't afford that..."
                 ephemeral = True
 
-            await interaction.response.send(content=output,ephemeral=ephemeral)
+            await interaction.response.send_message(content=output,ephemeral=ephemeral)
 
     select.callback = callback
     view = discord.ui.View()
