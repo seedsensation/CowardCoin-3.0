@@ -473,6 +473,7 @@ I hope you enjoy reading my silly documentation :)```
 PAGE 2 - ID: 'get'
 + To get a coin, simply click the button below the image!
 Any coins you collect will be stored forever in your Coin Pocket.
+Coins will appear between every {config.TimeToCoin[0]} seconds - {config.TimeToCoin[1]/60} minutes.
 ```
 """,
         "count": """
