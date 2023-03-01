@@ -69,10 +69,10 @@ class DiscordClient(discord.Client):  # create a new class from discord.py's Cli
         super().__init__(intents=discord.Intents.all())  # run discord.Client's __init__
         # also, set the intents to default
         self.synced = False  # set synced to False
-        self.coinactive = False
+        self.coinactive = False # make sure there is no coin active
 
-    async def setup_hook(self) -> None:
-        self.coin_creation_task.start()
+    async def setup_hook(self) -> None: # once the bot has been set up
+        self.coin_creation_task.start() # start the process for generating coins
 
     async def on_ready(self):  # this code defines how it knows it's connected
         await self.wait_until_ready()  # wait until the bot is connected to discord
@@ -80,49 +80,59 @@ class DiscordClient(discord.Client):  # create a new class from discord.py's Cli
             await tree.sync(guild=discord.Object(id=813656391310770198))  # force a sync to the test server
             self.synced = True  # mark synced as True
 
-        dotenv.load_dotenv(".env")
-        channelID = os.getenv("COIN_CHANNEL")
-        self.coinchannel = self.get_channel(int(channelID))
+        dotenv.load_dotenv(".env") # load file '.env'
+        channelID = os.getenv("COIN_CHANNEL") # load channel in '.env' - this is where coins will be sent
+        self.coinchannel = self.get_channel(int(channelID)) # set client.coinchannel to the coin channel object
         print(f'Logged in as {self.user} (ID: {self.user.id})')  # output username & ID
         print('------')
         await self.change_presence(activity=discord.Game(name="the economy 😎"))  # sets the status to Online
-        userlist.loadstate(client)
+        userlist.loadstate(client) # loads the current list of users from file
+    #   ^^^^^^^^                     see config.py for definition of userlist
+    #            ^^^^^^^^^           see extensions.user_class for definition of loadstate
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(seconds=10) # loop every 10 seconds
     async def coin_creation_task(self):
-        if self.coinactive:
-            print("Coin is currently active - counting down")
-            await asyncio.sleep(config.coinexpiry)
-            if self.coinactive:
-                try:
-                    await self.sentmsg.delete()
+        # this task's job is to check if a coin is required. if a coin *is* required, create one
+        # otherwise, start the process of a coin expiring
+        if self.coinactive: # if there is currently a coin
+            print(f"Coin is expiring in {config.coinexpiry} seconds.") # coin must expire
+            await asyncio.sleep(config.coinexpiry) # wait until the coin expires
+            if self.coinactive: # if the coin still exists
+                try: # this is here so that no error message is raised if the coin message is already gone
+                    await self.sentmsg.delete() # delete the coin message
                     expirymsg = await interaction.response.send_message("The coin expired...")
-                    await asyncio.sleep(config.coinexpiry)
-                    await expirymsg.delete()
+                    # send an alert that the coin has expired
+                    await asyncio.sleep(config.coinexpiry) # wait for {config.coinexpiry} seconds again
+                    await expirymsg.delete() # delete the expiry alert
                 except:
-                    pass
-                self.coinactive = False
-        elif self.synced:
+                    pass # ignore any errors
+                self.coinactive = False # deactivate coin
+        elif self.synced: # otherwise, if the bot is synced to Discord (to avoid errors)
             timetowait = random.randint(config.TimeToCoin[0], config.TimeToCoin[1])  # decide how long to wait
             print(f"Coin will appear in {timetowait} seconds")
-            await asyncio.sleep(timetowait)
+            await asyncio.sleep(timetowait) # wait for the coin to appear
 
             # The coin is created
-            self.coin = coin()
-            current = self.coin
-            print(f"{current.name} coin generated")
-            with open(pathlib.Path(f"files/images/{current.filename}.gif"), "rb") as f:
+            self.coin = coin() # new instance of class 'coin'
+            current = self.coin # saves it temporarily to a local variable
+            print(f"{current.name} coin generated") # announce coin in log
+            with open(pathlib.Path(f"files/images/{current.filename}.gif"), "rb") as f: # open image file
                 # noinspection PyTypeChecker
-                picture = discord.File(f)
-            view = CoinButton()
+                picture = discord.File(f) # attach image file
+            view = CoinButton() # add the 'get coin' button to the message
             self.sentmsg = await self.coinchannel.send(
                 content=f"{current.emote} A new {current.name} coin has appeared! Click the button below to claim it!",
-                file=picture, view=view)
-            self.coinactive = True
+                file=picture, view=view) # send the message - include the attached image, and the button
+            
+            self.coinactive = True # set new coin to active
+            
+            # at this point, the task will repeat itself
+            # after 10 seconds, it will discover that client.coinactive is true
+            # and start the process for expiring the coin.
 
     @coin_creation_task.before_loop
     async def before_my_task(self):
-        await self.wait_until_ready()  # wait until the bot logs in
+        await self.wait_until_ready()  # wait until the bot logs in before creating a coin
 
 
 client = DiscordClient()
@@ -139,34 +149,41 @@ class CoinButton(discord.ui.View):
 
     @discord.ui.button(label="Get Coin")
     async def getcoin(self, interaction: discord.Interaction, button: discord.ui.button):
-        current = client.coin
-        user = userlist.find(interaction.user.id)
-        user.coins += current.value
-        userlist.savestate()
-        s = "s" if user.coins != 1 else ""
+        current = client.coin # save the current coin to a variable
+        user = userlist.find(interaction.user.id) # find the user who clicked the button
+        #               ^^^^                        see extensions.user_class for definition of 'find'
+        user.coins += current.value # give the user coins
+        userlist.savestate() # save
+        s = "s" if user.coins != 1 else "" # add an "s" to the message if there is more than 1 coin
         await interaction.response.send_message(
             f"""
 {current.emote} Congratulations, {interaction.user.display_name}! You gained {current.value} CowardCoins!
 You now have {user.coins} coin{s}."""
         )
-        client.coinactive = False
-        await interaction.message.delete()
+        client.coinactive = False # disable coin
+        await interaction.message.delete() # delete coin message
 
 # ============================================================================================
 # ================================ GIVE COMMAND ==============================================
 # ============================================================================================
 @tree.command(name="give", description="Give coins to your friends!",
-              guild=discord.Object(id=813656391310770198))
+              guild=discord.Object(id=813656391310770198)) # create a new slash command
 async def give(interaction: discord.Interaction, recipient: discord.User, count: int):
-    if count <= 0:
+    # recipient: discord.User - this means that the command will only accept a user in the server as input
+    # count: int              - this means that it will only accept an integer as input
+    if count <= 0: # if 0 coins or negative coins are given
         await interaction.response.send_message(content="That's not how coins work...", ephemeral=True)
     else:
-        sender = userlist.find(interaction.user.id)
+        sender = userlist.find(interaction.user.id) # grab sender & recipient from userlist
         localrecipient = userlist.find(recipient.id)
-        if sender == localrecipient:
+        if sender == localrecipient: # if the user is sending coins to themselves
             currenttime = time.time()
             timediff = currenttime-sender.lasttrick
             if timediff < config.timebetweentricks:
+                
+                # this section calculates how long until next trick in hours, minutes & seconds.
+                # the minimum time between tricks is located in config.py
+                
                 timeleft = round(config.timebetweentricks-timediff)
                 output = ""
                 hours = math.floor(timeleft / 3600)
@@ -190,55 +207,55 @@ async def give(interaction: discord.Interaction, recipient: discord.User, count:
                     plural = "s"
                 output += str(timeleft) + " second" + plural
                 await interaction.response.send_message("You're too tired after your last trick! Give it another try in " + output + " 😎")
+                
             else:
-                if sender.coins >= count:
+                
+                if sender.coins >= count: # if the sender *can* afford to send coins
 
-                    style = random.randint(1, 100)
+                    style = random.randint(1, 100) # generate a random number of StylePoints™
                     print(str(style))
-                    tricks = [
+                    tricks = [ # generate the text of the trick
     f"You juggle {count} coins while grinding on a rail!",
     f"You balance {count} coins on your head while doing a kickflip!",
     f"You jump in the air, throw your skateboard at a wall, bounce it off the wall and land back on it, with {count} coins in your mouth!"
                     ]
                     output = random.choice(tricks)
-                    if style <= 25:
-                        amountlost = math.ceil(count / 3)
-                        if amountlost == 1:
-                            plural = ""
-                        else:
-                            plural = "s"
-                        output += f"\nBut... oh no! You get distracted, and send {amountlost}coin{plural} flying!\n"
-                        sender.coins-=amountlost
-                    elif style > 25 and style < 90:
+                    if style <= 25: # if coins are lost:
+                        amountlost = math.ceil(count / 3) # you lose 1/3 of the coins you put in
+                        s = "s" if amountlost != 1 else ""
+                        output += f"\nBut... oh no! You get distracted, and send {amountlost}coin{s} flying!\n"
+                        sender.coins-=amountlost # lose coins
+                    elif style > 25 and style < 90: # neutral trick, no coins gained/lost
                         output += "\nIt's cool as hell, and everyone is applauding.\n"
-                    else:
+                    else: # if >90 points scored
                         output += "\nBut... what's this? You kick off the wall and do a full somersault before landing " \
                                   "back on your skateboard and catching all of the coins in your hand, and... there's " \
                                   f"twice as many in there than there were before?\nYou gained {count} coins!\n"
-                    sender.coins += count
-                    sender.style += style
+                        sender.coins += count # coins doubled
+                    sender.style += style # give out stylepoints
                     output += f"You gain {style} Style Points™!\nYou now have {sender.style} " \
                               f"Style Points™."
 
-                    await interaction.response.send_message(output)
-                    sender.lasttrick = time.time()
+                    await interaction.response.send_message(output) # send message
+                    sender.lasttrick = time.time() # save the time of their last trick
 
-                else:
+                else: # if cannot afford trick
                     await interaction.response.send_message("You can't afford to do *that* cool a trick!",ephemeral=True)
 
-        elif sender.coins >= count:
-            sender.coins -= count
-            localrecipient.coins += count
-            userlist.savestate()
+        elif sender.coins >= count: # if they can afford to send coins:
+            sender.coins -= count # lose that amount of coins
+            localrecipient.coins += count # give them to the recipient
+            userlist.savestate() # save
             s = "s" if count != 1 else ""
             await interaction.response.send_message(f"""
 {interaction.user.mention} sends {count} coin{s} to {recipient.mention}!
 {interaction.user.display_name} now has {sender.coins} coins.
 {recipient.display_name} now has {localrecipient.coins} coins.
 """)
-        else:
+        else: # if they can't afford to send coins:
             await interaction.response.send_message("You can't afford that...",ephemeral=True)
-
+            
+    # finally, after all other code has been executed, save the current list of coins
     userlist.savestate()
 
 # ============================================================================================
@@ -247,29 +264,29 @@ async def give(interaction: discord.Interaction, recipient: discord.User, count:
 @tree.command(name="leaderboard",description="See the highest ranked Collectors in the server!",
               guild=discord.Object(id=813656391310770198))
 async def leaderboard(interaction:discord.Interaction, option: str = None):
-    if not option:
-        option = "temp"
-    if option.lower() == "style":
+    if not option: # if no option given
+        option = "temp" # this is here to avoid errors
+    if option.lower() == "style": # if the option is 'style', sort by StylePoints™
         sorted_list = sorted(userlist, key=lambda x: x.style, reverse=True)
-    else:
+    else: # otherwise, sort by Coins
         sorted_list = sorted(userlist, key=lambda x: x.coins, reverse=True)
 
-    if option.lower() == "full":
+    if option.lower() == "full": # if option is full, show the whole leaderboard
         max = len(sorted_list)
-    else:
+    else: # otherwise only show the top 5 
         max = 5
-    leaderboard = []
-    for x in range(0,max):
-        if option.lower() == "style":
+    leaderboard = [] # create a list to store the leaderboard
+    for x in range(0,max): # for each item in the leaderboard (top 5 or all)
+        if option.lower() == "style": 
             if sorted_list[x].style != 0:
-                leaderboard.append(sorted_list[x])
+                leaderboard.append(sorted_list[x]) # add to the list if StylePoints > 0
         else:
             if sorted_list[x].coins != 0:
-                leaderboard.append(sorted_list[x])
+                leaderboard.append(sorted_list[x]) # add to the list if coins > 0
 
-    if len(leaderboard) == 0:
+    if len(leaderboard) == 0: # if the leaderboard is empty
         await interaction.response.send_message("The leaderboard is empty, sorry...",ephemeral=True)
-    else:
+    else: # otherwise output the leaderboard
         counter = 0
         if option.lower() == "style":
             temp = "Style "
@@ -279,12 +296,13 @@ async def leaderboard(interaction:discord.Interaction, option: str = None):
 
         for item in leaderboard:
             counter += 1
+            # output the leaderboard
             if option.lower() == "style":
                 output += f"{counter}. **{client.get_user(item.id).display_name}** - {item.style}\n"
             else:
                 output += f"{counter}. **{client.get_user(item.id).display_name}** - {item.coins}\n"
 
-        await interaction.response.send_message(output)
+        await interaction.response.send_message(output) # send the leaderboard
 
 
 # ============================================================================================
@@ -292,14 +310,13 @@ async def leaderboard(interaction:discord.Interaction, option: str = None):
 # ============================================================================================
 @tree.command(name="count", description="Find out how many coins you have!",
               guild=discord.Object(id=813656391310770198))
-# currently this command only works on my test version
 async def count(interaction: discord.Interaction, collector: discord.User = None):
-    if collector:
+    if collector: # if a user has been given
         localuser = userlist.find(collector.id)
-        discorduser = collector
+        discorduser = collector # set it so that it's reading the other user's data instead of sender
     else:
         localuser = userlist.find(interaction.user.id)
-        discorduser = interaction.user
+        discorduser = interaction.user # set it to read the sender's data
     s = "s" if localuser.coins != 1 else ""
     output = f"{discorduser.display_name} has {localuser.coins} coin{s}."
     print(localuser.style)
@@ -417,7 +434,7 @@ however, if you score more than 90, you will double the coins you put in.```"""
     }
     helppages["start"]+=f"This is page 1/{len(helppages)}!\nThese are all of the pages in the documentation currently:\n"
     count = 1
-    for page in helppages:
+    for page in helppages: # add in a table of contents to the start
         helppages["start"] += f"{count} - {page}\n"
         count += 1
     if not option:  # if the user hasn't included the name of a page
