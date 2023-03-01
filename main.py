@@ -25,7 +25,6 @@ logging.basicConfig(filename=pathlib.Path("logs/%s.txt" % logtime),
                     format='%(levelname)s: %(asctime)s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S')  # activates logging
 
-
 # set logging settings
 
 class coin:
@@ -75,10 +74,12 @@ class DiscordClient(discord.Client):  # create a new class from discord.py's Cli
         self.coin_creation_task.start() # start the process for generating coins
 
     async def on_ready(self):  # this code defines how it knows it's connected
-        await self.wait_until_ready()  # wait until the bot is connected to discord
+        await self.wait_until_ready()
         if not self.synced:  # if not synced
-            await tree.sync(guild=discord.Object(id=813656391310770198))  # force a sync to the test server
+            print("Syncing to tree...")
+            await tree.sync(guild=discord.Object(id=guildID))  # force a sync to the test server
             self.synced = True  # mark synced as True
+            print("Synced")
 
         dotenv.load_dotenv(".env") # load file '.env'
         channelID = os.getenv("COIN_CHANNEL") # load channel in '.env' - this is where coins will be sent
@@ -100,7 +101,7 @@ class DiscordClient(discord.Client):  # create a new class from discord.py's Cli
             if self.coinactive: # if the coin still exists
                 try: # this is here so that no error message is raised if the coin message is already gone
                     await self.sentmsg.delete() # delete the coin message
-                    expirymsg = await interaction.response.send_message("The coin expired...")
+                    expirymsg = await self.coinchannel.send("The coin expired...")
                     # send an alert that the coin has expired
                     await asyncio.sleep(config.coinexpiry) # wait for {config.coinexpiry} seconds again
                     await expirymsg.delete() # delete the expiry alert
@@ -143,11 +144,12 @@ tree = app_commands.CommandTree(client)
 global CHANNEL
 dotenv.load_dotenv(".env")
 TOKEN: str = os.getenv("DISCORD_TOKEN")  # retrieve token from .env file
+guildID: int = int(os.getenv("COIN_GUILD"))
 
 
 class CoinButton(discord.ui.View):
 
-    @discord.ui.button(label="Get Coin")
+    @discord.ui.button(label="Get Coin", style=discord.ButtonStyle.success)
     async def getcoin(self, interaction: discord.Interaction, button: discord.ui.button):
         current = client.coin # save the current coin to a variable
         user = userlist.find(interaction.user.id) # find the user who clicked the button
@@ -167,7 +169,7 @@ You now have {user.coins} coin{s}."""
 # ================================ GIVE COMMAND ==============================================
 # ============================================================================================
 @tree.command(name="give", description="Give coins to your friends!",
-              guild=discord.Object(id=813656391310770198)) # create a new slash command
+              guild=discord.Object(id=guildID)) # create a new slash command
 async def give(interaction: discord.Interaction, recipient: discord.User, count: int):
     # recipient: discord.User - this means that the command will only accept a user in the server as input
     # count: int              - this means that it will only accept an integer as input
@@ -262,7 +264,7 @@ async def give(interaction: discord.Interaction, recipient: discord.User, count:
 # ============================= LEADERBOARD COMMAND ==========================================
 # ============================================================================================
 @tree.command(name="leaderboard",description="See the highest ranked Collectors in the server!",
-              guild=discord.Object(id=813656391310770198))
+              guild=discord.Object(id=guildID))
 async def leaderboard(interaction:discord.Interaction, option: str = None):
     if not option: # if no option given
         option = "temp" # this is here to avoid errors
@@ -309,7 +311,7 @@ async def leaderboard(interaction:discord.Interaction, option: str = None):
 # =============================== COUNT COMMAND ==============================================
 # ============================================================================================
 @tree.command(name="count", description="Find out how many coins you have!",
-              guild=discord.Object(id=813656391310770198))
+              guild=discord.Object(id=guildID))
 async def count(interaction: discord.Interaction, collector: discord.User = None):
     if collector: # if a user has been given
         localuser = userlist.find(collector.id)
@@ -366,9 +368,82 @@ class HelpButtons(discord.ui.View):
             await interaction.response.send_message("You can't go any further forward...", ephemeral=True)
             # pop up an error message that's only visible to the clicker of the button
 
+class Select(discord.ui.Select):
+    def __init__(self):
+        options=[]
+
+
+        super().__init__(placeholder="Select an option",max_values=1,min_values=1,options=options)
+
+
+
+@tree.command(name="shop", description= "Buy icons to go next to your name!",
+              guild=discord.Object(id=guildID))
+async def test(startinteraction: discord.Interaction):
+    options = []
+    for item in config.icons:
+        options.append(discord.SelectOption(label=item.name, emoji=item.emote, description=item.desc))
+    select = discord.ui.Select(options=options,
+                               placeholder="Choose your new icon!")
+    author = startinteraction.user
+    async def callback(interaction: discord.Interaction):
+        localauthor = userlist.find(interaction.user.id)
+        boughtitem = config.icons.find(select.values[0])
+        authorrolelist  = []
+        for role in interaction.user.roles:
+            authorrolelist.append(role.id)
+
+        if boughtitem.id in authorrolelist:
+            await interaction.response.send("You already have this role...",ephemeral=True)
+        else:
+            cost = boughtitem.cost
+            ids = []
+            for item in config.icons:
+                ids.append(item.id)
+            for role in authorrolelist:
+                if int(role) in ids:
+                    cost -= (config.icons.find(int(role))).cost
+
+            if localauthor.coins >= cost:
+                ephemeral = False
+                output = f"{interaction.user.display_name} got the {boughtitem.name} role!\n"
+                if cost > 0 and cost != boughtitem.cost:
+                    output += f"You exchange your old role icon, meaning that this one costs you {cost} coins.\n"
+                elif cost < 0:
+                    output += f"You exchange your old role icon, meaning that you receive a refund of {-cost} coins."
+                elif cost == 0:
+                    output += f"You exchange your old role icon, meaning that this item is free."
+                else:
+                    output += f"This icon costs you {cost} coins."
+                for role in authorrolelist:
+                    if int(role) in ids:
+                        await interaction.user.remove_roles(discord.utils.get(interaction.guild.roles, id=role))
+
+                newrole = discord.utils.get(interaction.guild.roles, id=boughtitem.id)
+                await interaction.user.add_roles(newrole)
+                localauthor.coins -= cost
+                userlist.savestate()
+            else:
+                output = "You can't afford that..."
+                ephemeral = True
+
+            await interaction.response.send(content=output,ephemeral=ephemeral)
+
+    select.callback = callback
+    view = discord.ui.View()
+    view.add_item(select)
+
+
+    await startinteraction.response.send_message(
+        content="<a:gold:1038495846074941440> COIN STORE <a:gold:1038495846074941440>"
+        "\nTo buy any of these, select it from the Drop-Down List. "
+        "We'll do the rest :)",
+        view=view,
+        ephemeral=True)
+
 
 @tree.command(name="help", description="Get help with all of your CowardCoin needs.",
-              guild=discord.Object(id=813656391310770198))
+              guild=discord.Object(id=guildID))
 # currently this command only works on my test version
 async def help(interaction: discord.Interaction, option: str = ''):
     helppages = {  # this dictionary holds all of the information in the 'help' command.

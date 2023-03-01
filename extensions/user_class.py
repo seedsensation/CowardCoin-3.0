@@ -2,6 +2,7 @@ import os
 import pickle
 import pathlib
 import config
+from time import strftime
 
 attributes = ["id","coins","style","lasttrick"] # these are the valid attribute names
 
@@ -22,8 +23,8 @@ class Collector: # user class
         return f"Collector with ID {self.id}"
 
 class SearchableList(list): # new class can be used as a standard Python list, with additional functionality
-    def find(self, userid): # iterates through userlist to find a user with the given ID
-        return next((x for x in self if x.id == userid), None) 
+    def find(self, userid) -> Collector: # iterates through userlist to find a user with the given ID
+        return next((x for x in self if x.id == userid), None)
 
     def savestate(self): # saves list to SaveState.bin
         listtosave = self.convtolist() # converts to a standard list first
@@ -32,6 +33,14 @@ class SearchableList(list): # new class can be used as a standard Python list, w
         with open("SaveState.bin", "wb") as file:
             pickle.dump(listtosave, file)
         print(f"Saved State {self}")
+
+        if not os.path.exists(pathlib.Path(strftime("backups/%Y.%m.%d/"))):
+            os.makedirs(pathlib.Path(strftime("backups/%Y.%m.%d/")))  # make a folder if it doesn't already exist with the name of
+            # today's date
+        backuptime = pathlib.Path(strftime("%Y.%m.%d/%H.%M.%S"))
+        with open(pathlib.Path("backups/%s.bin" % backuptime), "wb") as backup:
+            pickle.dump(listtosave,backup)
+        print(f"Saved to backups/{str(backuptime)}")
 
     def loadstate(self,client):
         if os.path.exists("SaveState.bin"):
