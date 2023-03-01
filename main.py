@@ -151,19 +151,26 @@ class CoinButton(discord.ui.View):
 
     @discord.ui.button(label="Get Coin", style=discord.ButtonStyle.success)
     async def getcoin(self, interaction: discord.Interaction, button: discord.ui.button):
-        current = client.coin # save the current coin to a variable
-        user = userlist.find(interaction.user.id) # find the user who clicked the button
-        #               ^^^^                        see extensions.user_class for definition of 'find'
-        user.coins += current.value # give the user coins
-        userlist.savestate() # save
-        s = "s" if user.coins != 1 else "" # add an "s" to the message if there is more than 1 coin
-        await interaction.response.send_message(
-            f"""
-{current.emote} Congratulations, {interaction.user.display_name}! You gained {current.value} CowardCoins!
-You now have {user.coins} coin{s}."""
-        )
-        client.coinactive = False # disable coin
-        await interaction.message.delete() # delete coin message
+        if client.coinactive:
+            client.coinactive = False  # disable coin
+            await interaction.message.delete()  # delete coin message
+            current = client.coin # save the current coin to a variable
+            user = userlist.find(interaction.user.id) # find the user who clicked the button
+            #               ^^^^                        see extensions.user_class for definition of 'find'
+            user.coins += current.value # give the user coins
+            userlist.savestate() # save
+            s = "s" if user.coins != 1 else "" # add an "s" to the message if there is more than 1 coin
+            await interaction.response.send_message(
+                f"""
+    {current.emote} Congratulations, {interaction.user.display_name}! You gained {current.value} CowardCoins!
+    You now have {user.coins} coin{s}."""
+            )
+        else:
+            await interaction.response.send_message("Too slow... Sorry!",ephemeral=True)
+
+@tree.command(name="echo", description="Call and response.",guild=discord.Object(id=guildID))
+async def echo(interaction:discord.Interaction, response: str):
+    await interaction.response.send_message(response)
 
 # ============================================================================================
 # ================================ GIVE COMMAND ==============================================
