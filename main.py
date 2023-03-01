@@ -406,7 +406,9 @@ async def test(startinteraction: discord.Interaction):
                 ids.append(item.id)
             for role in authorrolelist:
                 if int(role) in ids:
-                    cost -= (config.icons.find(int(role))).cost
+                    foundrole = config.icons.find(role)
+                    if foundrole:
+                        cost -= foundrole.cost
 
             if localauthor.coins >= cost:
                 ephemeral = False
