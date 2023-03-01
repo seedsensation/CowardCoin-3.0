@@ -168,6 +168,17 @@ class CoinButton(discord.ui.View):
         else:
             await interaction.response.send_message("Too slow... Sorry!",ephemeral=True)
 
+class pointlessbutton(discord.ui.View):
+    @discord.ui.button(label="Click me! Click me!", style=discord.ButtonStyle.success)
+    async def pushbutton(self, interaction: discord.Interaction, button: discord.ui.button):
+        await interaction.response.send_message("BUTTON PUSHED! Click it again!",ephemeral=True)
+@tree.command(name="button", description="Create a button for immediate visual feedback :)",
+              guild=discord.Object(id=813656391310770198))
+async def makebutton(interaction:discord.Interaction):
+    buttonvar = discord.ui.Button(label="Click me!",)
+    view = pointlessbutton()
+    await interaction.response.send_message(content="A button, for you!",view=view)
+
 @tree.command(name="echo", description="Call and response.",guild=discord.Object(id=guildID))
 async def echo(interaction:discord.Interaction, response: str):
     await interaction.response.send_message(response)
