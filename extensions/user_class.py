@@ -78,11 +78,13 @@ def convertlegacyfile():
     # legacyfile = {userid:[coins,stylepoints,...],userid2:[coins,stylepoints,...]}
     # newformat = [collector(userid), collector(userid2), ...]
 
-    with open(pathlib.Path("files/text files/coins.txt"), "r") as f:
-        legacyfile = f.read()
+    with open(pathlib.Path("files/coins.txt"), "r") as f:
+        file: str = f.read()
+        legacyfile: dict = eval(file)
 
-    for item in legacyfile:
-        user = Collector(legacyfile[item]) # creates a new Collector item with the ID of the current user
+    for item in legacyfile.keys():
+        item = int(item)
+        user = Collector(item) # creates a new Collector item with the ID of the current user
         user.coins = legacyfile[item][0]   # sets the new Collector item's coins to their old coin count
         user.style = legacyfile[item][1]   # sets the new Collector item's StylePoints™ to their old count
         config.userlist.append(user)
