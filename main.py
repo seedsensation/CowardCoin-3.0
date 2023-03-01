@@ -175,9 +175,9 @@ class pointlessbutton(discord.ui.View):
 @tree.command(name="button", description="Create a button for immediate visual feedback :)",
               guild=discord.Object(id=813656391310770198))
 async def makebutton(interaction:discord.Interaction):
-    buttonvar = discord.ui.Button(label="Click me!",)
+    buttonvar = discord.ui.Button(label="Click me!")
     view = pointlessbutton()
-    await interaction.response.send_message(content="A button, for you!",view=view)
+    await interaction.response.send_message(content="A button, for you!",view=view,ephemeral=True)
 
 @tree.command(name="echo", description="Call and response.",guild=discord.Object(id=guildID))
 async def echo(interaction:discord.Interaction, response: str):
