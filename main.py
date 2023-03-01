@@ -375,7 +375,11 @@ class Select(discord.ui.Select):
 
         super().__init__(placeholder="Select an option",max_values=1,min_values=1,options=options)
 
-
+@tree.command(name="restart", description= "Give it a quick reboot - this will fix a few issues.",
+              guild=discord.Object(id=guildID))
+async def test(interaction: discord.Interaction):
+    await interaction.response.send_message("Restarting...")
+    exit()
 
 @tree.command(name="shop", description= "Buy icons to go next to your name!",
               guild=discord.Object(id=guildID))
