@@ -25,7 +25,6 @@ class Collector: # user class
 class SearchableList(list): # new class can be used as a standard Python list, with additional functionality
     def find(self, userid) -> Collector: # iterates through userlist to find a user with the given ID
         return next((x for x in self if x.id == userid), None)
-
     def savestate(self): # saves list to SaveState.bin
         listtosave = self.convtolist() # converts to a standard list first
         # It's converted to a standard list as this means that I can add additional functionality
