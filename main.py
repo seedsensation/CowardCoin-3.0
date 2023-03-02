@@ -100,10 +100,11 @@ class DiscordClient(discord.Client):  # create a new class from discord.py's Cli
             await asyncio.sleep(config.coinexpiry) # wait until the coin expires
             if self.coinactive: # if the coin still exists
                 try: # this is here so that no error message is raised if the coin message is already gone
-                    await self.sentmsg.edit("The coin expired...")
+                    await self.sentmsg.delete() # delete the coin message
+                    expirymsg = await self.coinchannel.send("The coin expired...")
                     # send an alert that the coin has expired
                     await asyncio.sleep(config.coinexpiry) # wait for {config.coinexpiry} seconds again
-                    await self.sentmsg.delete() # delete the expiry alert
+                    await expirymsg.delete() # delete the expiry alert
                 except:
                     pass # ignore any errors
                 self.coinactive = False # deactivate coin
@@ -152,18 +153,18 @@ class CoinButton(discord.ui.View):
     async def getcoin(self, interaction: discord.Interaction, button: discord.ui.button):
         if client.coinactive:
             client.coinactive = False  # disable coin
+            await interaction.message.delete()  # delete coin message
             current = client.coin # save the current coin to a variable
             user = userlist.find(interaction.user.id) # find the user who clicked the button
             #               ^^^^                        see extensions.user_class for definition of 'find'
             user.coins += current.value # give the user coins
             userlist.savestate() # save
             s = "s" if user.coins != 1 else "" # add an "s" to the message if there is more than 1 coin
-            await interaction.message.edit(content=
+            await interaction.response.send_message(
                 f"""
     {current.emote} Congratulations, {interaction.user.display_name}! You gained {current.value} CowardCoins!
-    You now have {user.coins} coin{s}.""", view=None
+    You now have {user.coins} coin{s}."""
             )
-            await in
         else:
             await interaction.response.send_message("Too slow... Sorry!",ephemeral=True)
 
