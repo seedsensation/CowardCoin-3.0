@@ -158,10 +158,10 @@ class CoinButton(discord.ui.View):
             user.coins += current.value # give the user coins
             userlist.savestate() # save
             s = "s" if user.coins != 1 else "" # add an "s" to the message if there is more than 1 coin
-            await interaction.message.edit(
+            await interaction.message.edit(content=
                 f"""
     {current.emote} Congratulations, {interaction.user.display_name}! You gained {current.value} CowardCoins!
-    You now have {user.coins} coin{s}."""
+    You now have {user.coins} coin{s}.""", view=None
             )
             await in
         else:
