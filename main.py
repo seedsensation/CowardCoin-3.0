@@ -348,7 +348,7 @@ async def count(interaction: discord.Interaction, collector: discord.User = None
 async def eat(interaction:discord.Interaction):
     localuser = userlist.find(interaction.user.id)
     if localuser.coins > 0:
-        await interaction.response.send_message("You ate a coin! Delicious :)")
+        await interaction.response.send_message(f"You ate a coin! Delicious :)\nYou now have {localuser.coins} coins left.")
         localuser.coins -= 1
         userlist.savestate()
     else:
