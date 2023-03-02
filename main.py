@@ -146,7 +146,6 @@ dotenv.load_dotenv(".env")
 TOKEN: str = os.getenv("DISCORD_TOKEN")  # retrieve token from .env file
 guildID: int = int(os.getenv("COIN_GUILD"))
 
-
 class CoinButton(discord.ui.View):
 
     @discord.ui.button(label="Get Coin", style=discord.ButtonStyle.success)
@@ -343,6 +342,18 @@ async def count(interaction: discord.Interaction, collector: discord.User = None
     if localuser.style:
         output += f"\nThey also have {localuser.style} StylePoints™!"
     await interaction.response.send_message(output)
+    
+@tree.command(name="eat", description= "Eat a delicious coin!",
+              guild=discord.Object(id=guildID))
+async def eat(interaction:discord.Interaction):
+    localuser = userlist.find(interaction.user.id)
+    if localuser.coins > 0:
+        await interaction.response.send_message("You ate a coin! Delicious :)")
+        localuser.coins -= 1
+        userlist.savestate()
+    else:
+        await interaction.response.send_message("You don't have any coins to eat :(",ephemeral=True)
+
 
 
 # ============================================================================================
