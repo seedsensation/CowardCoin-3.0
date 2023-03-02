@@ -346,12 +346,12 @@ async def count(interaction: discord.Interaction, collector: discord.User = None
 @tree.command(name="eat", description= "Eat a delicious coin!",
               guild=discord.Object(id=guildID))
 async def eat(interaction:discord.Interaction):
-    localuser = userlist.find(interaction.user.id)
-    if localuser.coins > 0:
+    localuser = userlist.find(interaction.user.id) # grab the user that's eating a coin
+    if localuser.coins > 0: # if they have coins
         await interaction.response.send_message(f"You ate a coin! Delicious :)\nYou now have {localuser.coins} coins left.")
-        localuser.coins -= 1
-        userlist.savestate()
-    else:
+        localuser.coins -= 1 # remove 1 coin
+        userlist.savestate() # save the current state
+    else: # if they can't afford to eat a coin:
         await interaction.response.send_message("You don't have any coins to eat :(",ephemeral=True)
 
 
