@@ -169,15 +169,38 @@ class CoinButton(discord.ui.View):
             await interaction.response.send_message("Too slow... Sorry!",ephemeral=True)
 
 class pointlessbutton(discord.ui.View):
-    @discord.ui.button(label="Click me! Click me!", style=discord.ButtonStyle.success)
+    @discord.ui.button(label="Click me! Click me!",
+                       style=discord.ButtonStyle.success,
+                       emoji="<a:cainedansandpemaneleLOL:751118345335603264>"
+                       )
     async def pushbutton(self, interaction: discord.Interaction, button: discord.ui.button):
-        await interaction.response.send_message("BUTTON PUSHED! Click it again!",ephemeral=True)
+        user = userlist.find(interaction.user.id)
+        user.buttonpushes += 1
+        userlist.savestate()
+        s = "s" if user.buttonpushes != 1 else ""
+        view = self
+        output = f"BUTTON PUSHED!\nYou have now pressed the button {user.buttonpushes} time{s}!!"
+        if user.buttonpushes == 100:
+            output += f"\nYour ascension is only just beginning."
+        await interaction.response.send_message(content=output,ephemeral=True,view=view)
+
+    @discord.ui.button(label="Reset Button Pushes", style=discord.ButtonStyle.red,emoji="<:waynerF:726571398377766984>")
+    async def resetbutton(self, interaction: discord.Interaction, button: discord.ui.button):
+        user = userlist.find(interaction.user.id)
+        user.buttonpushes = 0
+        userlist.savestate()
+        await interaction.response.send_message(content="Sorry to see you go... "
+                                                        "Your Button Pushes have been reset to 0.",
+                                                view=self,
+                                                ephemeral=True
+                                                )
+
 @tree.command(name="button", description="Create a button for immediate visual feedback :)",
               guild=discord.Object(id=guildID))
 async def makebutton(interaction:discord.Interaction):
-    buttonvar = discord.ui.Button(label="Click me!")
     view = pointlessbutton()
-    await interaction.response.send_message(content="A button, for you!",view=view,ephemeral=True)
+    user = userlist.find(interaction.user.id)
+    await interaction.response.send_message(content=f"A button, for you!\nYou have clicked the button {user.buttonpushes} times!",view=view,ephemeral=True)
 
 @tree.command(name="echo", description="Call and response.",guild=discord.Object(id=guildID))
 async def echo(interaction:discord.Interaction, response: str):

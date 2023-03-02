@@ -4,7 +4,7 @@ import pathlib
 import config
 from time import strftime
 
-attributes = ["id","coins","style","lasttrick"] # these are the valid attribute names
+attributes = ["id","coins","style","lasttrick","buttonpushes"] # these are the valid attribute names
 
 class Collector: # user class
     def __init__(self,id): # ID must be provided when instantiating class
