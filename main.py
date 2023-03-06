@@ -310,8 +310,10 @@ async def leaderboard(interaction:discord.Interaction, option: str = None):
         option = "temp" # this is here to avoid errors
     if option.lower() == "style": # if the option is 'style', sort by StylePoints™
         sorted_list = sorted(userlist, key=lambda x: x.style, reverse=True)
+        displayname = "StylePoints™"
     else: # otherwise, sort by Coins
         sorted_list = sorted(userlist, key=lambda x: x.coins, reverse=True)
+        displayname = "CowardCoins"
 
     if option.lower() == "full": # if option is full, show the whole leaderboard
         max = len(sorted_list)
@@ -340,9 +342,9 @@ async def leaderboard(interaction:discord.Interaction, option: str = None):
             counter += 1
             # output the leaderboard
             if option.lower() == "style":
-                output += f"{counter}. **{client.get_user(item.id).display_name}** - {item.style}\n"
+                output += f"{counter}. **{client.get_user(item.id).display_name}** - {item.style} {displayname}\n"
             else:
-                output += f"{counter}. **{client.get_user(item.id).display_name}** - {item.coins}\n"
+                output += f"{counter}. **{client.get_user(item.id).display_name}** - {item.coins} {displayname}\n"
 
         await interaction.response.send_message(output) # send the leaderboard
 
