@@ -101,7 +101,8 @@ class DiscordClient(discord.Client):  # create a new class from discord.py's Cli
             if self.coinactive: # if the coin still exists
                 try: # this is here so that no error message is raised if the coin message is already gone
                     await self.sentmsg.delete() # delete the coin message
-                    expirymsg = await self.coinchannel.send("The coin expired...")
+                    messages = ["ran away!", "passed away peacefully in its sleep...", "expired...", "escaped!", "exploded!"]
+                    expirymsg = await self.coinchannel.send(f"The coin {random.choice(messages)}")
                     # send an alert that the coin has expired
                     await asyncio.sleep(config.coinexpiry) # wait for {config.coinexpiry} seconds again
                     await expirymsg.delete() # delete the expiry alert
