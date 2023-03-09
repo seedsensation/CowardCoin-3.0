@@ -585,6 +585,12 @@ however, if you score more than 90, you will double the coins you put in.```"""
     else:  # otherwise
         await interaction.response.send_message("I don't recognise that command, sorry...", ephemeral=True)
         # come up with an error message only visible to the user
+        
+group = app_commands.Group(name="Test Group", description="description")
+
+@group.command(name="Test Command",description="If you can see this... it's fine")
+async def my_subcommand(interaction: discord.Interaction) -> None:
+  await interaction.response.send_message(content="if youre seeing this, no you didnt",ephemeral=True)
 
 
 client.run(TOKEN)
