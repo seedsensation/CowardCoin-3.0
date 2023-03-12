@@ -84,11 +84,11 @@ class DiscordClient(discord.Client):  # create a new class from discord.py's Cli
 
     async def on_ready(self):  # this code defines how it knows it's connected
         await self.wait_until_ready()
-        if not self.synced:  # if not synced
+        '''if not self.synced:  # if not synced
             print("Syncing to tree...")
             await tree.sync(guild=discord.Object(id=guildID))  # force a sync to the test server
             self.synced = True  # mark synced as True
-            print("Synced")
+            print("Synced")'''
 
         dotenv.load_dotenv(".env")  # load file '.env'
         channelID = os.getenv("COIN_CHANNEL")  # load channel in '.env' - this is where coins will be sent

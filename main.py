@@ -8,6 +8,7 @@ import time
 import math
 from extensions import pets
 from common import *
+from extensions.user_class import Collector
 
 if not os.path.exists(pathlib.Path(time.strftime("logs/%Y.%m.%d/"))):
     os.makedirs(pathlib.Path(time.strftime("logs/%Y.%m.%d/")))
@@ -23,6 +24,9 @@ logging.basicConfig(filename=pathlib.Path("logs/%s.txt" % logtime),
                     datefmt='%m/%d/%Y %I:%M:%S')  # activates logging
 
 # set logging settings
+
+def getlocaluser(interaction: discord.Interaction) -> Collector:
+    return userlist.find(interaction.user.id)
 
 
 class pointlessbutton(discord.ui.View):
@@ -55,9 +59,50 @@ class pointlessbutton(discord.ui.View):
 @tree.command(name="button", description="Create a button for immediate visual feedback :)",
               guild=discord.Object(id=guildID))
 async def makebutton(interaction:discord.Interaction):
+
     view = pointlessbutton()
     user = userlist.find(interaction.user.id)
     await interaction.response.send_message(content=f"A button, for you!\nYou have clicked the button {user.buttonpushes} times!",view=view,ephemeral=True)
+
+class cursebutton(discord.ui.View):
+
+    def __init__(self):
+        super().__init__()
+        self.curseresponse = False
+    @discord.ui.button(label="Announce it?",
+                       emoji="<:waynerSob:726571399275085895>",
+                       style=discord.ButtonStyle.red
+                       )
+    async def announcecurse(self, interaction: discord.Interaction, button: discord.Button):
+        if not self.curseresponse:
+            self.curseresponse = True
+            await client.coinchannel.send(
+                f"{interaction.user.display_name} received a Fester's Curse! <:waynerSob:726571399275085895>")
+            await interaction.response.send_message("Announcing your curse...")
+        else:
+            await interaction.response.send_message("You've already announced this curse!")
+
+
+
+@tree.command(name="curse", description="For 10 coins, cast an anonymous Fester's Curse on an unsuspecting Collector...",
+              guild=discord.Object(id=guildID))
+async def festerscurse(interaction:discord.Interaction, user: discord.User):
+    localuser = getlocaluser(interaction)
+    if localuser.coins >= 10:
+        imglist = ["curse1.gif","curse2.gif","curse3.gif"]
+        with open(pathlib.Path(f"files/images/{random.choice(imglist)}"), "rb") as f:  # open image file
+            # noinspection PyTypeChecker
+            picture = discord.File(f)  # attach image file
+        view = cursebutton()
+        localuser.coins -= 10
+
+        s = "s" if localuser.coins != 1 else ""
+        await interaction.response.send_message(content=f"Curse Sent...\nYou now have {localuser.coins} coin{s}.",
+                                                ephemeral=True)
+        await user.send("```diff\n- A FESTER'S CURSE UPON YE! - ```", file=picture,view=view)
+        userlist.savestate()
+    else:
+        await interaction.response.send_message(content="You can't afford this curse... sorry...",ephemeral=True)
 
 @tree.command(name="echo", description="Call and response.",guild=discord.Object(id=guildID))
 async def echo(interaction:discord.Interaction, response: str):
