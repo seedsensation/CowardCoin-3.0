@@ -1,5 +1,5 @@
 from common import *
-
+import pickle
 
 class Pet:
     def __init__(self, ownerid: int, name: str = None):
@@ -17,6 +17,17 @@ class PetList(list):
     def countuserspets(self, id: int) -> int:
         petlist = [x for x in self if x.ownerid == id]
         return len(petlist)
+
+    def savestate(self):
+        result = self.convtolist()
+
+
+
+    def convtolist(self) -> list:
+        result = []
+        for item in self:
+            result.append(item)
+        return result
 
 petslist = PetList()
 
