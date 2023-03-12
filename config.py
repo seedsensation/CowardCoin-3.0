@@ -19,7 +19,7 @@ class storelist(list):
 TimeToCoin = [30, 60] # default: [30,1800]
 
 coincount = 0
-coinexpiry = 30 # default: 120
+coinexpiry = 60 # default: 120
 timebetweentricks = 14400 # in seconds - default: 14400
 
 userlist = user_class.SearchableList()
