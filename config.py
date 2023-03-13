@@ -16,7 +16,7 @@ class storelist(list):
         return next((x for x in self if x.name == name), None)
 
 
-TimeToCoin = [30, 60] # default: [30,1800]
+TimeToCoin = [30, 1800] # default: [30,1800]
 
 coincount = 0
 coinexpiry = 60 # default: 120
