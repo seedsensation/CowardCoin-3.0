@@ -101,6 +101,8 @@ async def festerscurse(interaction:discord.Interaction, user: discord.User):
                                                 ephemeral=True)
         await user.send("```diff\n- A FESTER'S CURSE UPON YE! - ```", file=picture,view=view)
         userlist.savestate()
+        if localuser.id == client.user.id:
+            await client.coinchannel.send("I've been cursed...  <:waynerSob:726571399275085895>")
     else:
         await interaction.response.send_message(content="You can't afford this curse... sorry...",ephemeral=True)
 
