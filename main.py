@@ -473,7 +473,16 @@ PAGE 7 - ID: 'style'
 You can do one coin trick every ~{math.ceil(config.timebetweentricks/3600)} hours (by default).
 This will give you a random number of StylePoints™, between 1 and 100.
 If you score fewer than 15 StylePoints, you will lose 1/3 of the coins you put into the Trick -
-however, if you score more than 90, you will double the coins you put in.```"""
+however, if you score more than 90, you will double the coins you put in.```
+""",
+        "curse": f"""
+```diff
+PAGE 8 - ID: 'curse'
++ You can type '/curse' to cast a Fester's Curse on anyone in the server!
+A curse costs 10 coins to perform.
+If you've cursed, you can click the red button to announce that you've been cursed in the #coins channel.
+Curses are entirely anonymous - however if you're having issues or want it to stop, please DM Mercury for assistance.```
+"""
     }
     helppages["start"]+=f"This is page 1/{len(helppages)}!\nThese are all of the pages in the documentation currently:\n"
     count = 1
