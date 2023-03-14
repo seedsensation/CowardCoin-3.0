@@ -170,7 +170,7 @@ async def give(interaction: discord.Interaction, recipient: discord.User, count:
                     if style <= 25: # if coins are lost:
                         amountlost = math.ceil(count / 3) # you lose 1/3 of the coins you put in
                         s = "s" if amountlost != 1 else ""
-                        output += f"\nBut... oh no! You get distracted, and send {amountlost}coin{s} flying!\n"
+                        output += f"\nBut... oh no! You get distracted, and send {amountlost} coin{s} flying!\n"
                         sender.coins-=amountlost # lose coins
                     elif style > 25 and style < 90: # neutral trick, no coins gained/lost
                         output += "\nIt's cool as hell, and everyone is applauding.\n"
@@ -480,7 +480,7 @@ however, if you score more than 90, you will double the coins you put in.```
 PAGE 8 - ID: 'curse'
 + You can type '/curse' to cast a Fester's Curse on anyone in the server!
 A curse costs 10 coins to perform.
-If you've cursed, you can click the red button to announce that you've been cursed in the #coins channel.
+If you've been cursed, you can click the red button to announce that you've been cursed in the #coins channel.
 Curses are entirely anonymous - however if you're having issues or want it to stop, please DM Mercury for assistance.```
 """
     }
