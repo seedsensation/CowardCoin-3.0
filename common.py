@@ -14,7 +14,7 @@ dotenv.load_dotenv(".env")
 TOKEN: str = os.getenv("DISCORD_TOKEN")  # retrieve token from .env file
 guildID: int = int(os.getenv("COIN_GUILD"))
 
-debug = True
+debug = False
 
 class coin:
 
