@@ -14,6 +14,7 @@ dotenv.load_dotenv(".env")
 TOKEN: str = os.getenv("DISCORD_TOKEN")  # retrieve token from .env file
 guildID: int = int(os.getenv("COIN_GUILD"))
 
+debug = True
 
 class coin:
 
@@ -84,15 +85,18 @@ class DiscordClient(discord.Client):  # create a new class from discord.py's Cli
 
     async def on_ready(self):  # this code defines how it knows it's connected
         await self.wait_until_ready()
-        if not self.synced:  # if not synced
-            print("Syncing to tree...")
-            await tree.sync(guild=discord.Object(id=guildID))  # force a sync to the test server
-            self.synced = True  # mark synced as True
-            print("Synced")
+        if not debug:
+            if not self.synced:  # if not synced
+                print("Syncing to tree...")
+                await tree.sync(guild=discord.Object(id=guildID))  # force a sync to the test server
+                self.synced = True  # mark synced as True
+                print("Synced")
 
         dotenv.load_dotenv(".env")  # load file '.env'
         channelID = os.getenv("COIN_CHANNEL")  # load channel in '.env' - this is where coins will be sent
+        adminID = os.getenv("ADMIN_CHANNEL")
         self.coinchannel = self.get_channel(int(channelID))  # set client.coinchannel to the coin channel object
+        self.adminchannel = self.get_channel(int(adminID))
         print(f'Logged in as {self.user} (ID: {self.user.id})')  # output username & ID
         print('------')
         await self.change_presence(activity=discord.Game(name="the economy 😎"))  # sets the status to Online

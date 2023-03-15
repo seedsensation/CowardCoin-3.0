@@ -86,7 +86,19 @@ class cursebutton(discord.ui.View):
 
 @tree.command(name="curse", description="For 10 coins, cast an anonymous Fester's Curse on an unsuspecting Collector...",
               guild=discord.Object(id=guildID))
-async def festerscurse(interaction:discord.Interaction, user: discord.User):
+async def festerscurse(interaction:discord.Interaction, user: discord.User, message: str = None):
+    if message:
+        if len(message.split()) > 1:
+            await interaction.response.send_message("One word only...",ephemeral=True)
+            return False
+        elif len(message) > 10:
+            await interaction.response.send_message("You're limited to 10 characters or less... sorry :(",ephemeral=True)
+            return False
+        else:
+            embed = discord.Embed(title=f"Curse Message Sent to {user.display_name}", description=message)
+            embed.set_author(name=interaction.user.display_name,icon_url=interaction.user.avatar.url)
+            print(interaction.user.avatar.url)
+            await client.adminchannel.send(embed=embed)
     localuser = getlocaluser(interaction)
     if localuser.coins >= 10:
         imglist = ["curse1.gif","curse2.gif","curse3.gif"]
@@ -99,7 +111,11 @@ async def festerscurse(interaction:discord.Interaction, user: discord.User):
         s = "s" if localuser.coins != 1 else ""
         await interaction.response.send_message(content=f"Curse Sent...\nYou now have {localuser.coins} coin{s}.",
                                                 ephemeral=True)
-        await user.send("```diff\n- A FESTER'S CURSE UPON YE! - ```", file=picture,view=view)
+        output = "```diff\n- A FESTER'S CURSE UPON YE! -"
+        if message:
+            output += f"\n***UNCLE FESTER*** says: {message}"
+        output += "```"
+        await user.send(output, file=picture,view=view)
         userlist.savestate()
         if localuser.id == client.user.id:
             await client.coinchannel.send("I've been cursed...  <:waynerSob:726571399275085895>")
@@ -481,6 +497,8 @@ PAGE 8 - ID: 'curse'
 + You can type '/curse' to cast a Fester's Curse on anyone in the server!
 A curse costs 10 coins to perform.
 If you've been cursed, you can click the red button to announce that you've been cursed in the #coins channel.
+You can attach a message to a curse, but it must be one word only, and 10 characters or less.
+WE DO KEEP A LOG OF THESE MESSAGES - the server rules are still enforced.
 Curses are entirely anonymous - however if you're having issues or want it to stop, please DM Mercury for assistance.```
 """
     }
