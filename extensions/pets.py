@@ -1,6 +1,6 @@
 from common import *
 import pickle
-'''
+
 class Pet:
     def __init__(self, ownerid: int, name: str = None):
         self.name = name if name else f"Pet {petslist.countuserspets(ownerid)}"
@@ -44,4 +44,3 @@ async def makepet(interaction: discord.Interaction, name: str = None) -> None:
     await interaction.response.send_message(
         f"Congratulations! You now have a beautiful baby {petslist[-1].name}!"
     )
-'''
