@@ -465,6 +465,7 @@ PAGE 4 - ID: 'rarities'
 2. Silver - worth 5-10 coins
 3. Gold - worth 10-20 coins
 4. Red - worth ????? coins
+5. WHITE - worth ????????????? coins
 The more coins a variant is worth, the rarer it is.```
 """,
         "leaderboard": """

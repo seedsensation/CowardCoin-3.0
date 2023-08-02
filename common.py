@@ -24,8 +24,9 @@ class coin:
             ["undefined", "[error]", "error", 0, [0, 0]],
             ["bronze", "<a:bronzecoin:844545666201288755>", "bronze", 50, [1, 5]],
             ["silver", "<a:silvercoin:844545665911881788>", "silver", 80, [5, 10]],
-            ["gold", "<a:goldcoin:813889535699189871>", "gold", 99, [20, 50]],
-            ["SUPER RARE red", "<a:redcoin:844545670709772290>", "ultrarare", 100, [75, 100]],
+            ["gold", "<a:goldcoin:813889535699189871>", "gold", 95, [20, 50]],
+            ["SUPER RARE red", "<a:redcoin:844545670709772290>", "ultrarare", 99, [75, 100]],
+            ["ULTIMATE White", "<a:white:1136340312529318018>", "white", 100, [500, 1000]]
         ]
 
         # Sets default coin rarities
