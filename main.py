@@ -233,6 +233,8 @@ def sanitiseUsername(username: str) -> str:
       else:
         output += character
 
+    return output
+
 @tree.command(name="leaderboard",description="See the highest ranked Collectors in the server!",
               guild=discord.Object(id=guildID))
 async def leaderboard(interaction:discord.Interaction, option: str = None):
