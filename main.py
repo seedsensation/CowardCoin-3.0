@@ -224,6 +224,15 @@ async def give(interaction: discord.Interaction, recipient: discord.User, count:
 # ============================================================================================
 # ============================= LEADERBOARD COMMAND ==========================================
 # ============================================================================================
+
+def sanitiseUsername(username: str) -> str:
+    output = ""
+    for character in username:
+      if character in ["_","*","`"]:
+        output += "\\"+character
+      else:
+        output += character
+
 @tree.command(name="leaderboard",description="See the highest ranked Collectors in the server!",
               guild=discord.Object(id=guildID))
 async def leaderboard(interaction:discord.Interaction, option: str = None):
@@ -263,9 +272,9 @@ async def leaderboard(interaction:discord.Interaction, option: str = None):
             counter += 1
             # output the leaderboard
             if option.lower() == "style":
-                output += f"{counter}. **{client.get_user(item.id).display_name}** - {item.style} {displayname}\n"
+                output += f"{counter}. **{sanitiseUsername(client.get_user(item.id).display_name)}** - {item.style} {displayname}\n"
             else:
-                output += f"{counter}. **{client.get_user(item.id).display_name}** - {item.coins} {displayname}\n"
+                output += f"{counter}. **{sanitiseUsername(client.get_user(item.id).display_name)}** - {item.coins} {displayname}\n"
 
         await interaction.response.send_message(output) # send the leaderboard
 
